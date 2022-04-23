@@ -1,0 +1,14 @@
+{
+    "cSpell.enableFiletypes": [
+        "coq"
+    ],
+    "cSpell.words": [
+        "andb",
+        "Fixpoint",
+        "forall",
+        "mult",
+        "nandb",
+        "negb",
+        "simpl"
+    ]
+}
