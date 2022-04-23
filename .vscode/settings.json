@@ -10,5 +10,6 @@
         "nandb",
         "negb",
         "simpl"
-    ]
+    ],
+    "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix"
 }
