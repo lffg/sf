@@ -622,3 +622,20 @@ Proof.
   - reflexivity.
   - reflexivity.
 Qed.
+
+(******************************************************************************)
+
+(*
+ * FIXPOINTS AND STRUCTURAL RECURSION
+ *)
+
+(* A fixpoint definition operates on structural recursion. In order to guarantee
+ * that every function that can be defined in Coq will terminate on all inputs,
+ * Coq demands that at least one argument of every `Fixpoint` is _decreasing_.
+ *)
+
+ (* Fixpoint factorial' (n i acc : nat) : nat :=
+  if i =? n
+    then i * acc
+    else (factorial' n (i + 1) (acc * i)). *)
+
