@@ -86,8 +86,7 @@ Qed.
 Theorem double_negb : forall b : bool,
   negb (negb b) = b.
 Proof.
-  intros n.
-  destruct n as [].
+  intros [].
   - reflexivity.
   - reflexivity.
 Qed.
