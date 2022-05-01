@@ -1,8 +1,5 @@
-# My workspace
 *-src
-*Exs.v
 
-# Misc
 .*.aux
 .*.d
 *.a

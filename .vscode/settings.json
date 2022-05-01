@@ -1,18 +1,32 @@
 {
     "files.exclude": {
-        "**/*.{aux,glob,vo,vok,vos}": true,
+        //"**/*.{aux,glob,vo,vok,vos}": true,
+        ".Makefile.d": true,
     },
     "cSpell.enableFiletypes": [
         "coq"
     ],
     "cSpell.words": [
         "andb",
+        "fixpoint",
         "Fixpoint",
+        "FIXPOINTS",
         "forall",
+        "friday",
+        "involutive",
+        "Involutive",
+        "minustwo",
+        "monday",
         "mult",
         "nandb",
         "negb",
-        "simpl"
+        "nullary",
+        "saturday",
+        "simpl",
+        "sunday",
+        "thursday",
+        "tuesday",
+        "wednesday"
     ],
     "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix"
 }

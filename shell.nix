@@ -1,5 +1,5 @@
 { pkgs ? import <nixpkgs> { } }:
 pkgs.mkShell {
   name = "software-foundations";
-  packages = with pkgs; [ coq_8_13 ];
+  packages = with pkgs; [ gnumake coq_8_13 ];
 }
