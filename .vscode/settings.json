@@ -1,6 +1,6 @@
 {
     "files.exclude": {
-        //"**/*.{aux,glob,vo,vok,vos}": true,
+        "**/*.{aux,glob,vo,vok,vos}": true,
         ".Makefile.d": true,
     },
     "cSpell.enableFiletypes": [
