@@ -19,7 +19,7 @@ Proof.
   (* Since `n` is arbitrary, we must use induction. *)
   induction n as [| n' IHn'].
   - reflexivity.
-  - simpl mult. rewrite -> IHn'. reflexivity.
+  - simpl. rewrite -> IHn'. reflexivity.
 Qed.
 
 Theorem plus_n_Sm : forall n m : nat,
@@ -49,13 +49,7 @@ Proof.
   intros n m p.
   induction n as [| n' IHn'].
   - simpl. reflexivity.
-  - simpl.
-    induction m as [| m' IHm'].
-    + simpl. rewrite -> plus_0_r. reflexivity.
-    + simpl.
-      induction p as [| p' IHp'].
-      * repeat rewrite -> plus_0_r. reflexivity.
-      * rewrite <- IHn'. reflexivity.
+  - simpl. rewrite <- IHn'. reflexivity.
 Qed.
 
 (******************************************************************************)
