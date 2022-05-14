@@ -187,3 +187,48 @@ Qed.
 Definition manual_grade_for_destruct_induction : option (nat * string) := None.
 
 (******************************************************************************)
+
+(*
+ * PROOFS WITHIN PROOFS
+ *)
+
+(* Sometimes it is useful to create a “proof within a proof”. For example, it
+ * may be desirable to not pollute the top-level environment with a name that
+ * won't be reused in another place.
+ *
+ * In such cases, the `assert` tactic may be used. It essentially asserts a
+ * named assertion and introduces two sub-goals. The first one that is used to
+ * prove assertion. The second sub-goal being the original goal (i.e. the one
+ * before the `assert`, but with the proven assertion on its context).
+ *
+ * The `assert` tactic can also be used as a technique to better specify where
+ * the `replace` tactic should act on.
+ *)
+
+Theorem plus_rearrange_first_try : forall n m p q : nat,
+  (n + m) + (p + q) = (m + n) + (p + q).
+Proof.
+  intros n m p q.
+  (* Here we only want to rewrite `n + m` as `m + n`. However, `replace` is also
+   * rewriting `p + q`, which is not desirable here.
+   *)
+  rewrite add_comm.
+Abort.
+
+(* So we may use `assert` to specify where the rewrite should take place. And
+ * prove such assertion with the `add_comm` theorem. *)
+
+ Theorem plus_rearrange_first : forall n m p q : nat,
+ (n + m) + (p + q) = (m + n) + (p + q).
+Proof.
+  intros n m p q.
+  assert (H: n + m = m + n). {
+    (* Here we prove the assertion. *)
+    rewrite -> add_comm. reflexivity.
+  }
+  (* Here we prove the original goal with the given assertion in the context.*)
+  rewrite -> H.
+  reflexivity.
+Qed.
+
+(******************************************************************************)
