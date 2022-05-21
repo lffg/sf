@@ -336,7 +336,7 @@ Fixpoint plus (m n : nat) : nat :=
   Proof. simpl. reflexivity. Qed.
 
   (* What's even happening above??
-   * 
+   *
    *   plus [(S (S O)) (S (S (S O)))] = plus [2 3]
    *                   ^^^^^^^^^^^^^
    *
@@ -372,7 +372,7 @@ Fixpoint plus (m n : nat) : nat :=
   Proof. simpl. reflexivity. Qed.
 
   Fixpoint mult (m n : nat) : nat :=
-    match n with 
+    match n with
     | O => O
     | S n' => plus m (mult m n')
     end.
