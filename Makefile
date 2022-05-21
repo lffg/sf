@@ -10,9 +10,12 @@ clean: $(COQ_MAKEFILE)
 $(COQ_MAKEFILE): _CoqProject
 	coq_makefile -f _CoqProject -o $(COQ_MAKEFILE)
 
-force _CoqProject Makefile: ;
+_CoqProject:
+	@echo "-Q src/lf LF" > _CoqProject
+	@echo "" >> _CoqProject
+	@find src -iname '*.v' >> _CoqProject
 
-%: $(COQ_MAKEFILE) force
+%: $(COQ_MAKEFILE)
 	@+$(MAKE) -f $(COQ_MAKEFILE) $@
 
-.PHONY: all clean force
+.PHONY: all clean _CoqProject

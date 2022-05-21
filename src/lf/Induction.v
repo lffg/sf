@@ -218,7 +218,7 @@ Abort.
 (* So we may use `assert` to specify where the rewrite should take place. And
  * prove such assertion with the `add_comm` theorem. *)
 
- Theorem plus_rearrange_first : forall n m p q : nat,
+ Theorem plus_rearrange : forall n m p q : nat,
  (n + m) + (p + q) = (m + n) + (p + q).
 Proof.
   intros n m p q.
@@ -232,3 +232,139 @@ Proof.
 Qed.
 
 (******************************************************************************)
+
+(*
+ * MORE EXERCISES
+ *)
+
+(******************************************************************************)
+
+(* Exercises *)
+
+Theorem add_shuffle3 : forall n m p : nat,
+  n + (m + p) = m + (n + p).
+Proof.
+  intros n m p.
+  do 2 (rewrite -> add_assoc).
+  assert (H: n + m = m + n). { rewrite -> add_comm. reflexivity. }
+  rewrite -> H.
+  reflexivity.
+Qed.
+
+(* Helper *)
+Theorem mul_n_0 : forall n : nat, n * 0 = 0.
+Proof.
+  induction n as [| n' IHn'].
+  - reflexivity.
+  - simpl. rewrite -> IHn'. reflexivity.
+Qed.
+
+(* Helper *)
+Theorem mul_n_Sm : forall n m : nat,
+  n * (S m) = n + n * m.
+Proof.
+  intros n m.
+  induction n as [| n' IHn'].
+  - reflexivity.
+  - simpl. rewrite -> IHn'. rewrite -> add_shuffle3. reflexivity.
+Qed.
+
+Theorem mul_comm : forall n m : nat,
+  n * m = m * n.
+Proof.
+  intros n m.
+  induction n as [| n' IHn'].
+  - rewrite -> mul_n_0. reflexivity.
+  - simpl. rewrite -> mul_n_Sm. rewrite -> IHn'. reflexivity.
+Qed.
+
+(******************************************************************************)
+
+(* Exercises *)
+
+Check leb: nat -> nat -> bool.
+
+(* Guess: Induction; equal comparison is at the bottom, ref. “go down”. *)
+Theorem leb_refl : forall n : nat,
+  (n <=? n) = true.
+Proof.
+  induction n as [| n' IHn'].
+  - simpl. reflexivity.
+  - simpl. rewrite -> IHn'. reflexivity.
+Qed.
+
+(* Guess: Simplification; this case is covered in the def. with “depth 1”. *)
+Theorem zero_neqb_S : forall n : nat,
+  0 =? (S n) = false.
+Proof.
+  intros n. simpl. reflexivity.
+Qed.
+
+(* Guess: Case analysis; since first argument is matched first. *)
+Theorem andb_false_r : forall b : bool,
+  andb b false = false.
+Proof.
+  destruct b.
+  - reflexivity.
+  - reflexivity.
+Qed.
+
+(* Guess: Simplification and rewriting; since has assumption. *)
+Theorem plus_leb_compat_l : forall n m p : nat,
+  n <=? m = true -> (p + n) <=? (p + m) = true.
+Proof.
+  intros n m p H.
+  induction p as [| n' IHn'].
+  - simpl. rewrite -> H. reflexivity.
+  - simpl. rewrite -> IHn'. reflexivity.
+Qed. (* Wrong guess. *)
+
+(* Guess: Simplification; this case is covered in the def. with “depth 1”. *)
+Theorem S_neqb_0 : forall n : nat,
+  (S n) =? 0 = false.
+Proof.
+  intros n. simpl. reflexivity.
+Qed.
+
+(* Guess: Induction; `n` (on the right) won't match with “depth 1”. *)
+Theorem mult_1_l : forall n : nat, 1 * n = n.
+Proof.
+  intros n. simpl.
+  induction n as [| n' IHn'].
+  - reflexivity.
+  - simpl. rewrite -> IHn'. reflexivity.
+Qed.
+
+(* Guess: Case analysis; bool is not really a inductively-defined type. *)
+Theorem all3_spec : forall b c : bool,
+  orb
+    (andb b c)
+    (orb (negb b)
+         (negb c))
+  = true.
+Proof.
+  intros b c.
+  destruct b eqn:Eb.
+  - destruct c.
+    + reflexivity.
+    + reflexivity.
+  - destruct c.
+    + reflexivity.
+    + reflexivity.
+Qed.
+
+(* Guess: Induction. *)
+Theorem mult_plus_distr_r : forall n m p : nat,
+  (n + m) * p = (n * p) + (m * p).
+Proof.
+  intros n m p.
+  induction p as [| p' IHp'].
+  - repeat rewrite mul_n_0. reflexivity.
+  - repeat rewrite mul_n_Sm. rewrite IHp'.
+Admitted.
+
+(* Guess: Induction. *)
+Theorem mult_assoc : forall n m p : nat,
+  n * (m * p) = (n * m) * p.
+Proof.
+Admitted.

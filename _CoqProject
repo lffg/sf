@@ -1,1 +1,4 @@
--Q . LF
+-Q src/lf LF
+
+src/lf/Basics.v
+src/lf/Induction.v
