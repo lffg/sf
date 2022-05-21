@@ -1,0 +1,42 @@
+{
+  "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
+  "version": "0.2",
+  "enabledLanguageIds": [
+    "coq"
+  ],
+  "languageSettings": [
+    {
+      "languageId": "*",
+      "locale": "*",
+      "caseSensitive": false
+    }
+  ],
+  "useGitignore": true,
+  "ignorePaths": [
+    ".git"
+  ],
+  "words": [
+    "andb",
+    "builtins",
+    "cleanall",
+    "compat",
+    "decr",
+    "devshell",
+    "elim",
+    "fixpoint",
+    "fixpoints",
+    "forall",
+    "gnumake",
+    "involutive",
+    "minustwo",
+    "mult",
+    "nandb",
+    "nbeq",
+    "negb",
+    "neqb",
+    "nixpkgs",
+    "nullary",
+    "numtide",
+    "pkgs"
+  ]
+}
