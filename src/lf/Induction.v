@@ -407,3 +407,51 @@ Proof.
   - reflexivity.
   - rewrite -> add_comm. reflexivity.
 Qed.
+
+(******************************************************************************)
+
+(* Exercise *)
+
+(* Taken from `Basics.v`, repeated for convenience. *)
+Inductive bin : Type :=
+  | Z
+  | B0 (n : bin)
+  | B1 (n : bin).
+
+(* Taken from `Basics.v`, repeated for convenience. *)
+Fixpoint incr (m : bin) : bin :=
+  match m with
+  | Z => B1 Z
+  | B0 m' => B1 m'
+  | B1 m' => B0 (incr m')
+  end.
+
+(* Taken from `Basics.v`, repeated for convenience. *)
+Fixpoint decr (m : bin) : bin :=
+  match m with
+  | Z => Z
+  | B0 m' => B1 (decr m')
+  | B1 Z => Z
+  | B1 m' => B0 m'
+  end.
+
+(* Taken from `Basics.v`, repeated for convenience. *)
+Fixpoint bin_to_nat (m : bin) : nat :=
+  match m with
+  | Z => 0
+  | B0 m' => 2 * (bin_to_nat m')
+  | B1 m' => 1 + 2 * (bin_to_nat m')
+  end.
+
+Theorem bin_to_nat_pres_incr : forall b : bin,
+  S (bin_to_nat b) = bin_to_nat (incr b).
+Proof.
+  intros b.
+  induction b as [| b0' IHb0' | b1' IHb1'].
+  - simpl. reflexivity.
+  - simpl. reflexivity.
+  - simpl.
+    rewrite <- IHb1'.
+    simpl.
+    rewrite plus_n_Sm.
+    reflexivity.
