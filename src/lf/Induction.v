@@ -203,6 +203,14 @@ Definition manual_grade_for_destruct_induction : option (nat * string) := None.
  *
  * The `assert` tactic can also be used as a technique to better specify where
  * the `replace` tactic should act on.
+ *
+ * One may also use the `replace` tactic as an alternative to the combination of
+ * the `assert` and `rewrite` tactics. The former takes the following form:
+ *
+ *     replace (a) with (b).
+ *
+ * It will generate two sub-goals, a) the expression with (a) is in place of (b)
+ * and (b) is in place of (a); and b) a goal where `a = b`.
  *)
 
 Theorem plus_rearrange_first_try : forall n m p q : nat,
@@ -358,13 +366,44 @@ Theorem mult_plus_distr_r : forall n m p : nat,
   (n + m) * p = (n * p) + (m * p).
 Proof.
   intros n m p.
-  induction p as [| p' IHp'].
-  - repeat rewrite mul_n_0. reflexivity.
-  - repeat rewrite mul_n_Sm. rewrite IHp'.
-Admitted.
+  induction n as [| n' IHn'].
+  - simpl. reflexivity.
+  - simpl. rewrite -> IHn'. rewrite -> add_assoc. reflexivity.
+Qed.
 
 (* Guess: Induction. *)
 Theorem mult_assoc : forall n m p : nat,
   n * (m * p) = (n * m) * p.
 Proof.
-Admitted.
+  intros n m p.
+  induction n as [| n' IHn'].
+  - simpl. reflexivity.
+  - simpl. rewrite -> IHn'. rewrite -> mult_plus_distr_r. reflexivity.
+Qed.
+
+(******************************************************************************)
+
+(* Exercise *)
+
+Theorem eqb_refl : forall n : nat,
+  (n =? n) = true.
+Proof.
+  intros n.
+  induction n as [| n' IHn'].
+  - simpl. reflexivity.
+  - simpl. rewrite -> IHn'. reflexivity.
+Qed.
+
+(******************************************************************************)
+
+(* Exercise *)
+
+Theorem add_shuffle3' : forall n m p : nat,
+  n + (m + p) = m + (n + p).
+Proof.
+  intros n m p.
+  do 2 (rewrite -> add_assoc).
+  replace (n + m) with (m + n).
+  - reflexivity.
+  - rewrite -> add_comm. reflexivity.
+Qed.
