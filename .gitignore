@@ -1,5 +1,6 @@
 __generated__
 __ignore__
+scratch
 .vscode
 !.vscode/settings.json
 

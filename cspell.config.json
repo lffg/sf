@@ -20,6 +20,7 @@
     "builtins",
     "cleanall",
     "compat",
+    "countoddmembers",
     "decr",
     "devshell",
     "elim",
@@ -31,12 +32,17 @@
     "minustwo",
     "mult",
     "nandb",
+    "natlist",
+    "natprod",
     "nbeq",
     "negb",
     "neqb",
     "nixpkgs",
+    "nonzeros",
     "nullary",
     "numtide",
-    "pkgs"
+    "oddmembers",
+    "pkgs",
+    "surjective"
   ]
 }
