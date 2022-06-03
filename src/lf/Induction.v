@@ -443,7 +443,7 @@ Fixpoint bin_to_nat (m : bin) : nat :=
   | B1 m' => 1 + 2 * (bin_to_nat m')
   end.
 
-Theorem bin_to_nat_pres_incr : forall b : bin,
+(* Theorem bin_to_nat_pres_incr : forall b : bin,
   S (bin_to_nat b) = bin_to_nat (incr b).
 Proof.
   intros b.
@@ -454,4 +454,4 @@ Proof.
     rewrite <- IHb1'.
     simpl.
     rewrite plus_n_Sm.
-    reflexivity.
+    reflexivity. *)
