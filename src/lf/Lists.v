@@ -165,9 +165,129 @@ Proof. reflexivity. Qed.
 
 (******************************************************************************)
 
+(* Exercise *)
+
 Fixpoint alternate (l1 l2 : natlist) : natlist :=
   match l1, l2 with
   | [], l2 => l2
   | l1, [] => l1
   | h1 :: t1, h2 :: t2 => h1 :: h2 :: alternate t1 t2
   end.
+
+(******************************************************************************)
+
+Definition bag := natlist.
+
+Fixpoint count (v : nat) (s : bag) : nat :=
+  match s with
+  | [] => 0
+  | h :: t => (if h =? v then 1 else 0) + count v t
+  end.
+
+Example test_count1: count 1 [1; 2; 3; 1; 4; 1] = 3.
+Proof. reflexivity. Qed.
+Example test_count2: count 6 [1; 2; 3; 1; 4; 1] = 0.
+Proof. reflexivity. Qed.
+
+Definition sum : bag -> bag -> bag := app.
+
+Example test_sum1: count 1 (sum [1; 2; 3] [1; 4; 1]) = 3.
+Proof. reflexivity. Qed.
+
+Definition add (v : nat) (s : bag) : bag := v :: s.
+
+Example test_add1: count 1 (add 1 [1; 4; 1]) = 3.
+Proof. reflexivity. Qed.
+Example test_add2: count 5 (add 1 [1; 4; 1]) = 0.
+Proof. reflexivity. Qed.
+
+Definition member (v : nat) (s : bag) : bool :=
+  negb (count v s =? 0).
+
+Example test_member1: member 1 [1; 4; 1] = true.
+Proof. reflexivity. Qed.
+Example test_member2: member 2 [1; 4; 1] = false.
+Proof. reflexivity. Qed.
+
+Fixpoint member' (v : nat) (s : bag) : bool :=
+  match s with
+  | [] => false
+  | h :: t => if h =? v then true else member' v t
+  end.
+
+Example test_member'1: member' 1 [1; 4; 1] = true.
+Proof. reflexivity. Qed.
+Example test_member'2: member' 2 [1; 4; 1] = false.
+Proof. reflexivity. Qed.
+
+(******************************************************************************)
+
+(* Exercises *)
+
+Fixpoint remove_one (v : nat) (s : bag) : bag :=
+  match s with
+  | [] => []
+  | h :: t => if h =? v
+                then t
+                else (h :: remove_one v t)
+  end.
+
+Example test_remove_one1:
+  count 5 (remove_one 5 [2; 1; 5; 4; 1]) = 0.
+Proof. reflexivity. Qed.
+Example test_remove_one2:
+  count 5 (remove_one 5 [2; 1; 4; 1]) = 0.
+Proof. reflexivity. Qed.
+Example test_remove_one3:
+  count 4 (remove_one 5 [2; 1; 4; 5; 1; 4]) = 2.
+Proof. reflexivity. Qed.
+Example test_remove_one4:
+  count 5 (remove_one 5 [2; 1; 5; 4; 5; 1; 4]) = 1.
+Proof. reflexivity. Qed.
+
+Fixpoint remove_all (v : nat) (s : bag) : bag :=
+  match s with
+  | [] => []
+  | h :: t => let r := remove_all v t in
+                if h =? v then r else h :: r
+  end.
+
+
+Example test_remove_all1:
+  count 5 (remove_all 5 [2; 1; 5; 4; 1]) = 0.
+Proof. reflexivity. Qed.
+Example test_remove_all2:
+  count 5 (remove_all 5 [2; 1; 4; 1]) = 0.
+Proof. reflexivity. Qed.
+Example test_remove_all3:
+  count 4 (remove_all 5 [2; 1; 4; 5; 1; 4]) = 2.
+Proof. reflexivity. Qed.
+Example test_remove_all4:
+  count 5 (remove_all 5 [2; 1; 5; 4; 5; 1; 4; 5; 1; 4]) = 0.
+Proof. reflexivity. Qed.
+
+Fixpoint subset (s1 s2 : bag) : bool :=
+  match s1 with
+  | [] => true
+  | x :: s1' => member x s2 && subset s1' (remove_one x s2)
+  end.
+
+Example test_subset1: subset [1; 2] [2; 1; 4; 1] = true.
+Proof. reflexivity. Qed.
+Example test_subset2: subset [1; 2; 2] [2; 1; 4; 1] = false.
+Proof. reflexivity. Qed.
+
+(******************************************************************************)
+
+(* Exercise *)
+
+Theorem bag_add_theorem : forall (v : nat) (b : bag),
+  count v (add v b) = S (count v b).
+Proof.
+  intros v b.
+  simpl.
+  rewrite eqb_refl.
+  reflexivity.
+Qed.
+
+(******************************************************************************)
