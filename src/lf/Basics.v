@@ -448,9 +448,8 @@ Proof. simpl. reflexivity. Qed.
 (* Checks if the first argument is less than or equal to the first. *)
 Fixpoint leb (m n : nat) : bool :=
   match m, n with
-  | O, O => true
-  | O, n => true
-  | m, O => false
+  | O, _       => true
+  | S _, O     => false
   | S m', S n' => leb m' n'
   end.
 
