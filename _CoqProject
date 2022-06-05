@@ -3,3 +3,4 @@
 src/lf/Basics.v
 src/lf/Induction.v
 src/lf/Lists.v
+src/lf/Poly.v
