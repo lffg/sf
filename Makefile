@@ -13,7 +13,7 @@ $(COQ_MAKEFILE): _CoqProject
 _CoqProject:
 	@echo "-Q src/lf LF" > _CoqProject
 	@echo "" >> _CoqProject
-	@find src -iname '*.v' >> _CoqProject
+	@find src -iname '*.v' | sort >> _CoqProject
 
 %: $(COQ_MAKEFILE)
 	@+$(MAKE) -f $(COQ_MAKEFILE) $@
