@@ -21,6 +21,7 @@
     "builtins",
     "cleanall",
     "compat",
+    "constfun",
     "countoddmembers",
     "decr",
     "devshell",
@@ -47,6 +48,7 @@
     "numtide",
     "oddmembers",
     "pkgs",
-    "surjective"
+    "surjective",
+    "uncurry"
   ]
 }

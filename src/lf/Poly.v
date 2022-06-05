@@ -306,4 +306,305 @@ Proof. reflexivity. Qed.
  * FUNCTIONS AS DATA
  *)
 
-(* ... *)
+(* Coq treats functions as first-class citizens, meaning they can be used as any
+ * other kind of value.
+ *)
+
+(* A higher-order function manipulates other functions. E.g.: *)
+Definition do_it_3_times {X : Type} (f : X -> X) (n : X) : X :=
+  f (f (f n)).
+
+Check @do_it_3_times: forall (X : Type), (X -> X) -> X -> X.
+
+Example test_doit3times: do_it_3_times minustwo 9 = 3.
+Proof. reflexivity. Qed.
+Example test_doit3times': do_it_3_times negb true = false.
+Proof. reflexivity. Qed.
+
+Fixpoint filter {T : Type} (pred : T -> bool) (l : list T) : list T :=
+  match l with
+  | [] => []
+  | x :: l' => let rest := filter pred l' in
+                if pred x then x :: rest else rest
+  end.
+
+Example test_filter1: filter even [1; 2; 3; 4] = [2; 4].
+Proof. reflexivity. Qed.
+
+Definition countoddmembers' (l : list nat) : nat :=
+  length (filter odd l).
+
+Example test_countoddmembers'1: countoddmembers' [1; 0; 3; 1; 4; 5] = 4.
+Proof. reflexivity. Qed.
+Example test_countoddmembers'2: countoddmembers' [0; 2; 4] = 0.
+Proof. reflexivity. Qed.
+Example test_countoddmembers'3: countoddmembers' [] = 0.
+Proof. reflexivity. Qed.
+
+(* Anonymous functions. *)
+Example test_anon_fun': do_it_3_times (fun n => n * n) 2 = 256.
+Proof. reflexivity. Qed.
+Example test_anon_fun'': filter (fun x => leb x 2) [0; 1; 2; 3; 4] = [0; 1; 2].
+Proof. reflexivity. Qed.
+
+(******************************************************************************)
+
+(* Use filter (instead of Fixpoint) to write a Coq function `filter_even_gt7`
+ * that takes a list of natural numbers as input and returns a list of just
+ * those that are even and greater than 7.
+ *)
+
+Definition filter_even_gt7 (l : list nat) : list nat :=
+  filter (fun n => even n && (7 <=? n)) l.
+
+Example test_filter_even_gt7_1 :
+  filter_even_gt7 [1; 2; 6; 9; 10; 3; 12; 8] = [10; 12; 8].
+Proof. reflexivity. Qed.
+Example test_filter_even_gt7_2 :
+  filter_even_gt7 [5; 2; 6; 19; 129] = [].
+Proof. reflexivity. Qed.
+
+(******************************************************************************)
+
+(* Exercise *)
+
+Definition partition {T : Type}
+                     (pred : T -> bool)
+                     (l : list T)
+                   : list T * list T :=
+  (filter pred l, filter (fun x => negb (pred x)) l).
+
+Fixpoint partition' {T : Type}
+                    (pred : T -> bool)
+                    (l : list T)
+                  : list T * list T :=
+  match l with
+  | [] => ([], [])
+  | x :: l' => let (pass, fail) := partition' pred l' in
+                if pred x then (x :: pass, fail) else (pass, x :: fail)
+  end.
+
+Example test_partition1: partition odd [1; 2; 3; 4; 5] = ([1; 3; 5], [2; 4]).
+Proof. reflexivity. Qed.
+Example test_partition2: partition (fun x => false) [5; 9; 0] = ([], [5; 9; 0]).
+Proof. reflexivity. Qed.
+Example test_partition3: @partition nat (fun x => true) [] = ([], []).
+Proof. reflexivity. Qed.
+
+(******************************************************************************)
+
+Fixpoint map {X Y : Type} (f : X -> Y) (l : list X) : list Y :=
+  match l with
+  | [] => []
+  | x :: l' => f x :: map f l'
+  end.
+
+Example test_map1: map (fun x => plus 3 x) [2; 0; 2] = [5; 3; 5].
+Proof. reflexivity. Qed.
+Example test_map2: map odd [2; 1; 2; 5] = [false; true; false; true].
+Proof. reflexivity. Qed.
+
+(******************************************************************************)
+
+(* Exercise *)
+
+Theorem map_app_distr :
+  forall (X Y : Type) (f : X -> Y) (l1 l2 : list X),
+  map f (l1 ++ l2) = map f l1 ++ map f l2.
+Proof.
+  intros X Y f l1 l2.
+  induction l1 as [| h l1' IHl1'].
+  - reflexivity.
+  - simpl. rewrite IHl1'. reflexivity.
+Qed.
+
+Theorem map_rev : forall (X Y : Type) (f : X -> Y) (l : list X),
+  map f (rev l) = rev (map f l).
+Proof.
+  intros X Y f l.
+  induction l as [| h l' IHl'].
+  - reflexivity.
+  - simpl.
+    rewrite map_app_distr.
+    rewrite IHl'.
+    reflexivity.
+Qed.
+
+(******************************************************************************)
+
+(* Exercise *)
+
+Fixpoint flat_map {X Y : Type} (f : X -> list Y) (l : list X) : list Y :=
+  match l with
+  | [] => []
+  | x :: l' => f x ++ flat_map f l'
+  end.
+
+Example test_flat_map1:
+  flat_map (fun n => [n; n; n]) [1; 5; 4]
+  = [1; 1; 1; 5; 5; 5; 4; 4; 4].
+Proof. reflexivity. Qed.
+
+(******************************************************************************)
+
+Definition option_map {X Y : Type} (f : X -> Y) (o : option X) : option Y :=
+  match o with
+  | None => None
+  | Some x => Some (f x)
+  end.
+
+Definition option_default {X : Type} (d : X) (o : option X) : X :=
+  match o with
+  | None => d
+  | Some x => x
+  end.
+
+(******************************************************************************)
+
+(* Intuitively, `fold` inserts the given binary operator `f` between every pair
+ * of elements in a given list. *)
+Fixpoint fold {X Y : Type} (f : X -> Y -> Y) (l : list X) (init : Y) : Y :=
+  match l with
+  | [] => init
+  | x :: l' => f x (fold f l' init)
+  end.
+
+Example fold_example1:
+  (* For example, *)
+  fold mult [1; 2; 3; 4] 1 =
+  (* Which yields: *)
+  1 * (2 * (3 * (4 * 1))).
+Proof. reflexivity. Qed.
+
+Check fold andb: list bool -> bool -> bool.
+
+Example fold_example2: fold andb [true; true; false; true] true = false.
+Proof. reflexivity. Qed.
+
+Example fold_example3: fold app [[1]; []; [2; 3]; [4]] [] = [1; 2; 3; 4].
+Proof. reflexivity. Qed.
+
+(******************************************************************************)
+
+(* Exercise *)
+
+(* Observe that the type of fold is parameterized by two type variables, X and
+ * Y, and the parameter f is a binary operator that takes an X and a Y and
+ * returns a Y. Can you think of a situation where it would be useful for X and
+ * Y to be different? *)
+
+Definition plus_some_numbers := fun (list : list (option nat)) =>
+  fold (fun opt => plus (option_default 0 opt)) list 0.
+
+Example plus_some_numbers_test:
+  plus_some_numbers [Some 1; None; Some 2; Some 3] = 6.
+Proof. reflexivity. Qed.
+
+(******************************************************************************)
+
+(* Coq functions are “curried by default”. Taking the example from the type of
+ * `plus`, *)
+Check plus: nat -> nat -> nat.
+
+(* Since the -> operator is right-associative, one may rewrite such type as: *)
+Check plus: nat -> (nat -> nat).
+
+(* Which is essentially a function take takes a `nat` and returns a function
+ * that takes a `nat` and returns a `nat`. This allows partial application. *)
+
+(* Indeed: *)
+Definition plus_2 := plus 2.
+Check plus_2: nat -> nat.
+
+Example plus_2_test: plus_2 3 = 5.
+Proof. reflexivity. Qed.
+
+(******************************************************************************)
+
+(*
+ * ADDITIONAL EXERCISES
+ *)
+
+Module Exercises.
+
+(******************************************************************************)
+
+(* Exercise *)
+
+(* Many common functions on lists can be implemented in terms of fold. For
+ * example, here is an alternative definition of length: *)
+Definition fold_length {X : Type} (l : list X) : nat :=
+  fold (fun _ n => S n) l 0.
+Example test_fold_length1: fold_length [4; 7; 0] = 3.
+Proof. reflexivity. Qed.
+
+(* Prove the correctness of `fold_length`. *)
+
+Theorem fold_length_correct : forall X (l : list X),
+  fold_length l = length l.
+Proof.
+  intros X l.
+  induction l as [| h l' IHl'].
+  - reflexivity.
+  - simpl. rewrite <- IHl'. reflexivity.
+Qed.
+
+(******************************************************************************)
+
+(* Exercise *)
+
+(* We can also define `map` in terms of `fold`. Finish `fold_map` below and
+ * prove its correctness. *)
+Definition fold_map {X Y : Type} (f : X -> Y) (l : list X) : list Y :=
+  fold (fun elt list => f elt :: list) l [].
+
+Theorem fold_map_correct : forall X Y (f : X -> Y) (l : list X),
+  @fold_map X Y f l = @map X Y f l.
+Proof.
+  intros X Y f l.
+  induction l as [| h l' IHl'].
+  - reflexivity.
+  - simpl. rewrite <- IHl'. reflexivity.
+Qed.
+
+(******************************************************************************)
+
+(* Exercise *)
+
+(* We can define currying as follows: *)
+Definition prod_curry {X Y Z : Type}
+  (f : X * Y -> Z) (x : X) (y : Y) : Z := f (x, y).
+
+(* As an exercise, define its inverse, `prod_uncurry`. Then prove the theorems
+ * below to show that the two are inverses. *)
+Definition prod_uncurry {X Y Z : Type}
+  (f : X -> Y -> Z) (p : X * Y) : Z :=
+    let (x, y) := p in
+      f x y.
+
+Check @prod_curry: forall (X Y Z : Type),
+  (X * Y -> Z) -> X -> Y -> Z.
+
+Check @prod_uncurry: forall (X Y Z : Type),
+  (X -> Y -> Z) -> X * Y -> Z.
+
+Theorem uncurry_curry:
+  forall (X Y Z : Type) (f : X -> Y -> Z) (x : X) (y : Y),
+    prod_curry (prod_uncurry f) x y = f x y.
+Proof.
+  intros X Y Z f x y.
+  reflexivity.
+Qed.
+
+Theorem curry_uncurry:
+  forall (X Y Z : Type) (f : (X * Y) -> Z) (p : X * Y),
+    prod_uncurry (prod_curry f) p = f p.
+Proof.
+  intros X Y Z f p.
+  destruct p as [x y].
+  reflexivity.
+Qed.
+
+(******************************************************************************)
+
+End Exercises.
