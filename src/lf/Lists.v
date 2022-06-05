@@ -584,4 +584,108 @@ Definition option_elim (d : nat) (o : natoption) : nat :=
 
 (******************************************************************************)
 
+(* Exercise *)
+
+Definition hd_error (l : natlist) : natoption :=
+  match l with
+  | [] => None
+  | h :: t => Some h
+  end.
+
+Example test_hd_error1 : hd_error [] = None.
+Proof. reflexivity. Qed.
+Example test_hd_error2 : hd_error [1] = Some 1.
+Proof. reflexivity. Qed.
+Example test_hd_error3 : hd_error [5; 6] = Some 5.
+Proof. reflexivity. Qed.
+
+(******************************************************************************)
+
+(* Exercise *)
+
+Theorem option_elim_hd : forall (l : natlist) (default : nat),
+  hd default l = option_elim default (hd_error l).
+Proof.
+  intros l d.
+  destruct l as [| h l'].
+  - reflexivity.
+  - reflexivity.
+Qed.
+
 End NatList.
+
+(******************************************************************************)
+
+(*
+ * PARTIAL MAPS
+ *)
+
+Inductive id : Type :=
+  | Id (n : nat).
+
+Definition eqb_id (x1 x2 : id) :=
+  match x1, x2 with
+  | Id n1, Id n2 => n1 =? n2
+  end.
+
+Theorem eqb_id_refl : forall (x : id),
+  eqb_id x x = true.
+Proof.
+  intros x.
+  destruct x as [n].
+  simpl.
+  rewrite eqb_refl.
+  reflexivity.
+Qed.
+
+Module PartialMap.
+
+Export NatList.
+
+Inductive partial_map : Type :=
+  | empty
+  | record (i : id) (v : nat) (m : partial_map).
+
+(* The `update` function overrides the entry for a given key by shadowing it
+ * with a new one, or simply adds a new entry “at the top”. *)
+Definition update
+  (d : partial_map) (x : id) (value : nat) : partial_map :=
+    record x value d.
+
+Fixpoint find (x : id) (d : partial_map) : natoption :=
+  match d with
+  | empty => None
+  | record i v d' => if eqb_id x i
+                      then Some v
+                      else find x d'
+  end.
+
+(******************************************************************************)
+
+(* Exercise *)
+
+Theorem update_eq :
+  forall (d : partial_map) (x : id) (v : nat),
+    find x (update d x v) = Some v.
+Proof.
+  intros d x v.
+  simpl.
+  rewrite eqb_id_refl.
+  reflexivity.
+Qed.
+
+(******************************************************************************)
+
+(* Exercise *)
+
+Theorem update_neq :
+  forall (d : partial_map) (x y : id) (o: nat),
+    eqb_id x y = false -> find x (update d y o) = find x d.
+Proof.
+  intros d x y o H.
+  simpl.
+  rewrite H.
+  reflexivity.
+Qed.
+
+End PartialMap.
