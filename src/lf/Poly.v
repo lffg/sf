@@ -607,4 +607,17 @@ Qed.
 
 (******************************************************************************)
 
+(* Exercise *)
+
+Theorem nth_list_length_is_none: forall (X : Type) (l : list X) (n : nat),
+  length l = n -> @nth_error X l n = None.
+Proof.
+  intros X l n.
+  induction l as [| h l' IHl'].
+  - reflexivity.
+  - simpl.
+Abort. (*        :(        *)
+
+(******************************************************************************)
+
 End Exercises.
