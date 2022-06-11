@@ -620,4 +620,67 @@ Abort. (*        :(        *)
 
 (******************************************************************************)
 
+Module Church.
+
+Definition cnat := forall (X : Type),
+  (X -> X) -> X -> X.
+
+Definition zero:  cnat := fun X s z => z.
+Definition one:   cnat := fun X s z => s z.
+Definition two:   cnat := fun X s z => s (s z).
+Definition three: cnat := fun X s z => s (s (s z)).
+(* or: Definition three: cnat := @do_it_3_times. *)
+
+(* Exercise *)
+
+Definition succ (n : cnat) : cnat :=
+  fun X s z => s (n X s z).
+
+Example succ_1: succ zero = one.
+Proof. reflexivity. Qed.
+Example succ_2: succ one = two.
+Proof. reflexivity. Qed.
+Example succ_3: succ two = three.
+Proof. reflexivity. Qed.
+
+(* Exercise *)
+
+Definition plus (n m : cnat) : cnat :=
+  fun X s z => n X s (m X s z).
+
+Example plus_1: plus zero one = one.
+Proof. reflexivity. Qed.
+Example plus_2: plus two three = plus three two.
+Proof. reflexivity. Qed.
+Example plus_3:  plus (plus two two) three = plus one (plus three three).
+Proof. reflexivity. Qed.
+
+(* Exercise *)
+
+Definition mult (n m : cnat) : cnat :=
+  fun X s z => n X (m X s) z.
+
+Example mult_1: mult one one = one.
+Proof. reflexivity. Qed.
+Example mult_2: mult zero (plus three three) = zero.
+Proof. reflexivity. Qed.
+Example mult_3: mult two three = plus three three.
+Proof. reflexivity. Qed.
+
+(* Exercise *)
+
+Definition exp (n m : cnat) : cnat :=
+  fun X s z => m (X -> X) (n X) s z.
+
+Example exp_1 : exp two two = plus two two.
+Proof. reflexivity. Qed.
+Example exp_2 : exp three zero = one.
+Proof. reflexivity. Qed.
+Example exp_3 : exp three two = plus (mult two (mult two two)) one.
+Proof. reflexivity. Qed.
+
+End Church.
+
+(******************************************************************************)
+
 End Exercises.
