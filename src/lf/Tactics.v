@@ -18,7 +18,7 @@ Qed.
  * little terser. *)
 
 (* `apply` also works with conditional hypothesis and lemmas.
- * When applying an implication, its premisses will be added to the list of
+ * When applying an implication, its premises will be added to the list of
  * sub-goals.
  *)
 
@@ -28,7 +28,7 @@ Theorem silly2 : forall (n m o p : nat),
       [n; o] = [m; p].
 Proof.
   intros n m o p Eq1 Eq2.
-  (* Since `Eq2` is an implication, its premisse `n = m` will added. *)
+  (* Since `Eq2` is an implication, its premise `n = m` will added. *)
   apply Eq2.
   apply Eq1.
 Qed.
@@ -153,7 +153,7 @@ Proof.
   (* In such cases, `apply with` should be used. *)
   apply trans_eq with (m := [c; d]).
   (* Or just `apply trans_eq with [c; d].` *)
-  (* And, just like `apply`, all `premisses` are added as sub-goals. *)
+  (* And, just like `apply`, all `premises` are added as sub-goals. *)
   apply Eq1.
   apply Eq2.
 Qed.
@@ -434,7 +434,7 @@ Proof.
   apply H.
 Qed.
 
-(* Forward reasoning starts from what is given (premisses, previously proven
+(* Forward reasoning starts from what is given (premises, previously proven
  * theorems) and iteratively draws conclusions from them until the goal is
  * reached.
  *
@@ -588,6 +588,257 @@ Proof.
     + simpl.
       apply IHt'.
       injection Eq as goal. apply goal.
+Qed.
+
+(******************************************************************************)
+
+(*
+ * UNFOLDING DEFINITIONS
+ *)
+
+Definition square n := n * n.
+
+Lemma square_mult : forall n m,
+  square (n * m) = square n * square m.
+Proof.
+  intros n m.
+  (* `simpl` doesn't do anything here. *)
+  simpl.
+  (* So one must unfold `square`'s definition to manipulate its expression. *)
+  unfold square.
+  rewrite mult_assoc.
+  assert (H: n * m * n = n * n * m).
+  - rewrite mul_comm.
+    (* `n * (m * p) = n * m * p` *)
+    apply mult_assoc.
+  - rewrite H.
+    rewrite mult_assoc.
+    reflexivity.
+Qed.
+
+Definition foo (x : nat) := 5.
+
+(* Tactics like `simpl`, `reflexivity` and `apply` will automatically unfold
+ * definitions of functions when progress is possible after the simplification.
+ *)
+
+Fact silly_fact_1 : forall m,
+  foo m + 1 = foo (m + 1) + 1.
+Proof.
+  intros m.
+  (* Will simplify `foo <expr>` to `5`. *)
+  simpl.
+  reflexivity.
+Qed.
+
+(* But automatically unfolding is often conservative... *)
+
+Definition bar x :=
+  match x with
+  | O => 5
+  | S _ => 5
+  end.
+
+(* Using `bar` definition, an analogous proof would fail. *)
+
+Fact silly_fact_2_FAILED : forall m,
+  bar m + 1 = bar (m + 1) + 1.
+Proof.
+  intros m.
+  (* Won't do nothing. *)
+  simpl.
+Abort.
+
+(* The previous simplification doesn't do anything since, while trying to
+ * simplify `bar`, Coq reaches a match in which the scrutinee is a variable
+ * (which could be “anything”).
+ *)
+
+(* One option to simplify it is to break `m` over its possible constructors. *)
+Fact silly_fact_2 : forall m,
+  bar m + 1 = bar (m + 1) + 1.
+Proof.
+  intros m.
+  destruct m as [| m'].
+  - simpl. reflexivity.
+  - simpl. reflexivity.
+Qed.
+
+(* Another option is to directly unfold `bar`, which better shows that the
+ * problem in the simplification lies in the match scrutinee. *)
+Fact silly_fact_2' : forall m,
+  bar m + 1 = bar (m + 1) + 1.
+Proof.
+  intros m.
+  unfold bar.
+  destruct m as [| m'] eqn:E.
+  - reflexivity.
+  - reflexivity.
+Qed.
+
+(******************************************************************************)
+
+(*
+ * USING `destruct` ON COMPOUND EXPRESSIONS
+ *)
+
+(* The `destruct` tactic can be used to perform case analysis on arbitrary
+ * computations. If `e` is an expression whose type is inductively defined,
+ * `destruct e` will generate all possible sub-goals.
+ *)
+
+Definition silly_fun (n : nat) : bool :=
+  if n =? 3
+    then false
+    else if n =? 5
+      then false
+      else false.
+
+Theorem silly_fun_false : forall (n : nat),
+  silly_fun n = false.
+Proof.
+  intros n. unfold silly_fun.
+  (* Here one is stuck over if `n =? 3` is true or not. Since both cases are
+   * possible, one can use destruct to reason about the two cases. *)
+  destruct (n =? 3).
+  - reflexivity.
+  (* Same with `if n =? 5`. *)
+  - destruct (n =? 5).
+    + reflexivity.
+    + reflexivity.
+Qed.
+
+(******************************************************************************)
+
+(* Exercise *)
+
+(* Both `split` and `combine` were defined in `Poly.v`.
+ * Prove that `split` and `combine` are inverses in the following sense.
+ *)
+
+Theorem combine_split : forall X Y (l : list (X * Y)) l1 l2,
+  split l = (l1, l2) ->
+  combine l1 l2 = l.
+Proof.
+  intros X Y l.
+  induction l as [| h' t' IHt'].
+  - intros l1 l2 Eq.
+    injection Eq as Eq1 Eq2.
+    rewrite <- Eq1. rewrite <- Eq2.
+    reflexivity.
+  - intros l1 l2.
+    simpl.
+    destruct h' as (x, y).
+    destruct (split t') as [lx ly].
+    intros Eq.
+    injection Eq as Eq1 Eq2.
+    rewrite <- Eq1. rewrite <- Eq2.
+    simpl.
+    f_equal.
+    apply IHt'.
+    reflexivity.
+Qed.
+
+(******************************************************************************)
+
+(* Most of the time, `eqn:E` is optional in `destruct` uses. However, when
+ * destructing compound statements, there are times when `eqn:E` is essential to
+ * preserve context information, without which finishing the proof becomes
+ * impossible.
+ *)
+
+Definition silly_fun1 (n : nat) : bool :=
+  if n =? 3
+    then true
+    else if n =? 5
+      then true
+      else false.
+
+Theorem silly_fun1_odd_FAILED : forall (n : nat),
+  silly_fun1 n = true -> odd n = true.
+Proof.
+  intros n Eq.
+  unfold silly_fun1 in Eq.
+  destruct (n =? 3).
+  (* One can't progress any further. There is not enough information.*)
+Abort.
+
+Theorem silly_fun1_odd : forall (n : nat),
+  silly_fun1 n = true -> odd n = true.
+Proof.
+  intros n Eq.
+  unfold silly_fun1 in Eq.
+  (* By using `eqn:E`, one saves the information that `n = 3` in the context,
+   * which latter will be used to prove that `odd n` is true, as `n` is 3. *)
+  destruct (n =? 3) eqn:Eh3.
+  - apply eqb_true in Eh3.
+    rewrite Eh3.
+    reflexivity.
+  (* Same here. *)
+  - destruct (n =? 5) eqn:Eh5.
+    + apply eqb_true in Eh5.
+      rewrite Eh5.
+      reflexivity.
+    + discriminate Eq.
+Qed.
+
+(******************************************************************************)
+
+(* Exercise *)
+
+Theorem bool_fn_applied_thrice:
+  forall (f : bool -> bool) (b : bool),
+    f (f (f b)) = f b.
+Proof.
+  intros f b.
+  destruct b eqn:Eb.
+  - destruct (f true) eqn:Et.
+    + rewrite Et. apply Et.
+    + destruct (f false) eqn:Ef.
+      * apply Et.
+      * apply Ef.
+  - destruct (f false) eqn:Ef.
+    + destruct (f true) eqn:Et.
+      * apply Et.
+      * apply Ef.
+    + rewrite Ef. apply Ef.
+Qed.
+
+(******************************************************************************)
+
+(* Exercise *)
+
+Search (?a =? ?b).
+
+Theorem eqb_sym : forall (n m : nat),
+  (n =? m) = (m =? n).
+Proof.
+  intros n.
+  induction n as [| n' IHn'].
+  - intros m.
+    destruct m as [| m'].
+    + reflexivity.
+    + reflexivity.
+  - intros m.
+    destruct m as [| m'].
+    + reflexivity.
+    + simpl. apply IHn'.
+Qed.
+
+(******************************************************************************)
+
+(* Exercise *)
+
+Theorem eqb_trans : forall n m p,
+  n =? m = true ->
+  m =? p = true ->
+  n =? p = true.
+Proof.
+  intros n m p Eq1 Eq2.
+  apply eqb_true in Eq1.
+  apply eqb_true in Eq2.
+  rewrite Eq1. rewrite Eq2.
+  apply eqb_refl.
 Qed.
 
 (******************************************************************************)
