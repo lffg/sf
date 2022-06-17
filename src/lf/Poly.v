@@ -613,10 +613,15 @@ Theorem nth_list_length_is_none: forall (X : Type) (l : list X) (n : nat),
   length l = n -> @nth_error X l n = None.
 Proof.
   intros X l n.
-  induction l as [| h l' IHl'].
+  generalize dependent n.
+  induction l as [| lh lt IHlt].
   - reflexivity.
-  - simpl.
-Abort. (*        :(        *)
+  - intros n. destruct n as [| n'] eqn:En.
+    + discriminate.
+    + simpl. intros H.
+      apply IHlt.
+      injection H as goal. apply goal.
+Qed.
 
 (******************************************************************************)
 
