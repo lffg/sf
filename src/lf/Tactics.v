@@ -82,13 +82,6 @@ Qed.
 
 (* Exercise *)
 
-Check 1.
-Search app.
-Search rev.
-
-Check 2.
-Search (rev _ = _).
-
 Theorem rev_exercise1 : forall (l l' : list nat),
   l = rev l' -> l' = rev l.
 Proof.
@@ -842,3 +835,130 @@ Proof.
 Qed.
 
 (******************************************************************************)
+
+(* Exercise *)
+
+(* We proved, in an exercise above, that for all lists of pairs, combine is the
+ * inverse of split. How would you formalize the statement that split is the
+ * inverse of combine? When is this property true?
+ *
+ * Complete the definition of split_combine_statement below with a property that
+ * states that split is the inverse of combine. Then, prove that the property
+ * holds. (Be sure to leave your induction hypothesis general by not doing
+ * intros on more things than necessary. Hint: what property do you need of l1
+ * and l2 for split (combine l1 l2) = (l1,l2) to be true?)
+ *)
+
+(* combine [a b c] [1 2 3 4 5] = [(a, 1) (b 2) (c 3)]
+ * So, split [(a, 1) (b 2) (c 3)] = l1 l2, and l2 != [1 2 3 4 5]
+ *
+ * So initial l1 must be equal in length to initial l2.
+ *
+ * Previous definition:
+ *
+ *     forall X Y (l : list (X * Y)) l1 l2,
+ *       split l = (l1, l2) -> combine l1 l2 = l.
+ *)
+
+Definition split_combine_statement : Prop :=
+  forall X Y (l1 : list X) (l2 : list Y),
+  length(l1) = length(l2) -> split (combine l1 l2) = (l1, l2).
+
+Theorem split_combine : split_combine_statement.
+Proof.
+  intros X Y l1.
+  induction l1 as [| hl1' tl1' IHtl1'].
+  - intros l2 H_len.
+    destruct l2 as [| hl2' tl2'] eqn:El2.
+    + reflexivity.
+    + simpl. discriminate H_len.
+  - intros l2 H_len.
+    destruct l2 as [| hl2' tl2'] eqn:El2.
+    + simpl. discriminate H_len.
+    + simpl. rewrite IHtl1'.
+      * reflexivity.
+      * simpl in H_len. injection H_len as goal. apply goal.
+Qed.
+
+(******************************************************************************)
+
+(* Exercise *)
+
+Theorem filter_exercise :
+  forall (X : Type) (test : X -> bool) (x : X) (l lf : list X),
+    filter test l = x :: lf -> test x = true.
+Proof.
+  intros X test x l.
+  induction l as [| lh lt IHlt].
+  - discriminate.
+  - simpl filter. destruct (test lh) eqn:Et.
+    + intros lf H.
+      injection H as H1 H2. rewrite <- H1.
+      apply Et.
+    + apply IHlt.
+Qed.
+
+(******************************************************************************)
+
+(* Exercise *)
+
+(* Define two recursive Fixpoints, forallb and existsb. The first checks whether
+ * every element in a list satisfies a given predicate.
+ *
+ * The second checks whether there exists an element in the list that satisfies
+ * a given predicate.
+ *)
+
+Fixpoint forallb {X : Type} (pred : X -> bool) (l : list X) :=
+  match l with
+  | [] => true
+  | h :: t => pred h && forallb pred t
+  end.
+
+Example test_forallb_1 : forallb odd [1; 3; 5; 7; 9] = true.
+Proof. reflexivity. Qed.
+Example test_forallb_2 : forallb negb [false; false] = true.
+Proof. reflexivity. Qed.
+Example test_forallb_3 : forallb even [0; 2; 4; 5] = false.
+Proof. reflexivity. Qed.
+Example test_forallb_4 : forallb (eqb 5) [] = true.
+Proof. reflexivity. Qed.
+
+Fixpoint existsb {X : Type} (pred : X -> bool) (l : list X) :=
+  match l with
+  | [] => false
+  | h :: t => pred h || existsb pred t
+  end.
+
+Example test_existsb_1 : existsb (eqb 5) [0; 2; 3; 6] = false.
+Proof. reflexivity. Qed.
+Example test_existsb_2 : existsb (andb true) [true; true; false] = true.
+Proof. reflexivity. Qed.
+Example test_existsb_3 : existsb odd [1; 0; 0; 0; 0; 3] = true.
+Proof. reflexivity. Qed.
+Example test_existsb_4 : existsb even [] = false.
+Proof. reflexivity. Qed.
+
+(* Next, define a non-recursive version of existsb -- call it existsb' -- using
+ * forallb and negb.
+ *)
+
+Definition existsb' {X : Type} (pred : X -> bool) (l : list X) :=
+  negb (forallb (fun x => negb (pred x)) l).
+
+(* Finally, prove a theorem existsb_existsb' stating that existsb' and existsb
+ * have the same behavior.
+ *)
+
+Theorem existsb_existsb' : forall (X : Type) (test : X -> bool) (l : list X),
+  existsb test l = existsb' test l.
+Proof.
+  intros X test l.
+  induction l as [| lh lt IHlt].
+  - reflexivity.
+  - unfold existsb'.
+    simpl. destruct (test lh).
+    + reflexivity.
+    + rewrite IHlt. reflexivity.
+Qed.
+
