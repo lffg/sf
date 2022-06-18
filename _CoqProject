@@ -3,5 +3,6 @@
 src/lf/Basics.v
 src/lf/Induction.v
 src/lf/Lists.v
+src/lf/Logic.v
 src/lf/Poly.v
 src/lf/Tactics.v
