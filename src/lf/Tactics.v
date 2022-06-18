@@ -1,3 +1,5 @@
+Set Warnings "-notation-overridden".
+
 From LF Require Export Poly.
 
 (*
