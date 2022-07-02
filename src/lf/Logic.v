@@ -1503,16 +1503,32 @@ Qed.
     of the [eqb_list] function below.  To make sure that your
     definition is correct, prove the lemma [eqb_list_true_iff]. *)
 
-Fixpoint eqb_list {A : Type} (eqb : A -> A -> bool)
-                  (l1 l2 : list A) : bool
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint eqb_list {A : Type} (eqb : A -> A -> bool) (l1 l2 : list A) : bool :=
+  match l1, l2 with
+  | h1 :: t1, h2 :: t2 => eqb h1 h2 && eqb_list eqb t1 t2
+  | [], [] => true
+  | _, _ => false
+  end.
 
 Theorem eqb_list_true_iff :
   forall A (eqb : A -> A -> bool),
     (forall a1 a2, eqb a1 a2 = true <-> a1 = a2) ->
     forall l1 l2, eqb_list eqb l1 l2 = true <-> l1 = l2.
 Proof.
-(* FILL IN HERE *) Admitted.
+  intros A eqb eqb_H l1.
+  induction l1 as [| h1 t1 IHt1].
+  - intros [| h2 t2]; split;
+      try repeat reflexivity;
+      try repeat discriminate.
+  - intros [| h2 t2].
+    + split; discriminate.
+    + simpl. destruct (eqb h1 h2) eqn:E; simpl; split.
+      * intros H. apply IHt1 in H. apply eqb_H in E. subst. reflexivity.
+      * apply eqb_H in E. subst. intros H. injection H. apply IHt1.
+      * discriminate.
+      * intros H. injection H as H _.
+        apply eqb_H in H. rewrite H in E. discriminate.
+Qed.
 
 (** [] *)
 
@@ -1533,15 +1549,22 @@ Fixpoint forallb {X : Type} (test : X -> bool) (l : list X) : bool :=
 Theorem forallb_true_iff : forall X test (l : list X),
   forallb test l = true <-> All (fun x => test x = true) l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X test l. induction l as [| h t]; split; simpl; intros.
+  - apply I.
+  - reflexivity.
+  - apply andb_true_iff in H as []; split.
+    + assumption.
+    + apply IHt. assumption.
+  - destruct H. apply andb_true_iff. split.
+    + assumption.
+    + apply IHt. assumption.
+Qed.
 
 (** (Ungraded thought question) Are there any important properties of
     the function [forallb] which are not captured by this
     specification? *)
 
-(* FILL IN HERE
-
-    [] *)
+(* Admitted. *)
 
 (* ================================================================= *)
 (** ** Classical vs. Constructive Logic *)
