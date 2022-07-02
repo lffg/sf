@@ -986,7 +986,7 @@ Lemma in_not_nil_42_take2 :
   forall l : list nat, In 42 l -> l <> [].
 Proof.
   intros l H.
-  apply in_not_nil with (x := 42).
+  apply (in_not_nil _ 42).
   apply H.
 Qed.
 
@@ -1182,7 +1182,7 @@ Proof.
   - intros acc.
     simpl.
     rewrite -> IHlt.
-    rewrite -> IHlt with (acc := [lh]).
+    rewrite -> (IHlt [lh]).
     rewrite <- app_assoc.
     simpl.
     reflexivity.
