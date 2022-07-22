@@ -1,8 +1,11 @@
+notes/.obsidian/workspace
 __generated__
+__scratch__
 __ignore__
-scratch
 .vscode
-!.vscode/settings.json
+
+MakefileCoq*
+_CoqProject
 
 .*.aux
 .*.d
@@ -37,7 +40,6 @@ lia.cache
 nia.cache
 nlia.cache
 nra.cache
-MakefileCoq*
 *~
 *.conf
 

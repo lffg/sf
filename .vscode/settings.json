@@ -1,6 +1,0 @@
-{
-    "files.exclude": {
-        "**/*.{aux,glob,vo,vok,vos}": true,
-        ".*.d": true,
-    },
-}
